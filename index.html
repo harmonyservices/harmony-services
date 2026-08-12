@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
- 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#f5f1e9">
+  <meta name="theme-color" content="#18324a">
 
   <title>Harmony Services</title>
 
-  <link rel="stylesheet" href="style.css">
-
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
 <div class="app">
 
-  <!-- EN-TÊTE -->
   <header class="header">
     <div class="brandline">
+
       <div class="logo">
         <div class="logoMark">H</div>
+
         <div>
           <div class="brand">Harmony Services</div>
           <div class="subtitle">Gestion de la conciergerie</div>
@@ -28,15 +27,14 @@
       </div>
 
       <div class="avatar">CB</div>
+
     </div>
   </header>
 
 
   <main class="content">
 
-    <!-- =========================
-         PLANNING
-    ========================== -->
+    <!-- PLANNING -->
 
     <section id="planningPage" class="page">
 
@@ -46,48 +44,43 @@
       <div class="stats">
 
         <div class="stat">
-          <div class="statNumber" id="statToday">0</div>
+          <div id="statToday" class="statNumber">0</div>
           <div class="statLabel">Aujourd'hui</div>
         </div>
 
         <div class="stat">
-          <div class="statNumber" id="statTodo">0</div>
+          <div id="statTodo" class="statNumber">0</div>
           <div class="statLabel">À faire</div>
         </div>
 
         <div class="stat">
-          <div class="statNumber" id="statLinen">0</div>
+          <div id="statLinen" class="statNumber">0</div>
           <div class="statLabel">Avec linge</div>
+        </div>
+
+        <div class="stat">
+          <div id="statProperties" class="statNumber">0</div>
+          <div class="statLabel">Logements</div>
         </div>
 
       </div>
 
 
-      <!-- FILTRES -->
-
       <div class="filters">
 
-        <button class="filter active"
-                data-filter="all"
-                onclick="setFilter('all')">
+        <button class="filter active" data-filter="all" onclick="setFilter('all')">
           Tous
         </button>
 
-        <button class="filter"
-                data-filter="today"
-                onclick="setFilter('today')">
+        <button class="filter" data-filter="today" onclick="setFilter('today')">
           Aujourd'hui
         </button>
 
-        <button class="filter"
-                data-filter="todo"
-                onclick="setFilter('todo')">
+        <button class="filter" data-filter="todo" onclick="setFilter('todo')">
           À faire
         </button>
 
-        <button class="filter"
-                data-filter="done"
-                onclick="setFilter('done')">
+        <button class="filter" data-filter="done" onclick="setFilter('done')">
           Terminés
         </button>
 
@@ -98,43 +91,35 @@
     </section>
 
 
-    <!-- =========================
-         CALENDRIER
-    ========================== -->
+    <!-- CALENDRIER -->
 
     <section id="calendarPage" class="page hidden">
 
       <div class="pageHeader">
         <h1>Calendrier</h1>
 
-        <button class="addSmall"
-                onclick="openModal()">
+        <button class="addSmall" onclick="openModal()">
           + Ajouter
         </button>
       </div>
 
       <div class="calendarControls">
 
-        <button onclick="previousMonth()">‹</button>
+        <button onclick="changeMonth(-1)">‹</button>
 
         <div id="calendarMonth"></div>
 
-        <button onclick="nextMonth()">›</button>
+        <button onclick="changeMonth(1)">›</button>
 
       </div>
 
       <div class="calendarLegend">
-
         <span>🧹 Ménage</span>
-
-        <span>🧹 🧺 Ménage + linge</span>
-
+        <span>🧹🧺 Ménage + linge</span>
         <span>🔧 Maintenance</span>
-
       </div>
 
       <div class="calendarWeek">
-
         <div>Lun</div>
         <div>Mar</div>
         <div>Mer</div>
@@ -142,75 +127,57 @@
         <div>Ven</div>
         <div>Sam</div>
         <div>Dim</div>
-
       </div>
 
-      <div id="calendarGrid"
-           class="calendarGrid">
-      </div>
+      <div id="calendarGrid" class="calendarGrid"></div>
 
     </section>
 
 
-    <!-- =========================
-         LOGEMENTS
-    ========================== -->
+    <!-- LOGEMENTS -->
 
-    <section id="propertiesPage"
-             class="page hidden">
+    <section id="propertiesPage" class="page hidden">
 
-      <h1>Logements</h1>
+      <div class="pageHeader">
+        <h1>Logements</h1>
+      </div>
 
       <div id="propertyList"></div>
 
     </section>
 
 
-    <!-- =========================
-         ÉQUIPE
-    ========================== -->
+    <!-- EQUIPE -->
 
-    <section id="teamPage"
-             class="page hidden">
+    <section id="teamPage" class="page hidden">
 
-      <h1>Équipe</h1>
+      <div class="pageHeader">
+        <h1>Équipe</h1>
+      </div>
 
       <div id="teamList"></div>
 
     </section>
 
 
-    <!-- =========================
-         LINGE
-    ========================== -->
+    <!-- LINGE -->
 
-    <section id="linenPage"
-             class="page hidden">
+    <section id="linenPage" class="page hidden">
 
-      <h1>Linge</h1>
+      <div class="pageHeader">
+        <h1>Linge</h1>
+      </div>
 
       <div class="stats">
 
         <div class="stat">
-          <div class="statNumber"
-               id="linenDirty">
-            0
-          </div>
-
-          <div class="statLabel">
-            À traiter
-          </div>
+          <div id="linenTodo" class="statNumber">0</div>
+          <div class="statLabel">À traiter</div>
         </div>
 
         <div class="stat">
-          <div class="statNumber"
-               id="linenReady">
-            0
-          </div>
-
-          <div class="statLabel">
-            Prêt
-          </div>
+          <div id="linenDone" class="statNumber">0</div>
+          <div class="statLabel">Terminés</div>
         </div>
 
       </div>
@@ -222,61 +189,36 @@
   </main>
 
 
-  <!-- BOUTON + -->
-
-  <button class="fab"
-          id="fab"
-          onclick="openModal()">
+  <button id="fab" class="fab" onclick="openModal()">
     +
   </button>
 
 
-  <!-- NAVIGATION -->
-
   <nav class="bottomNav">
 
-    <button class="nav active"
-            onclick="showPage('planning',this)">
-
+    <button class="nav active" onclick="showPage('planning', this)">
       <span class="navIcon">☷</span>
       Planning
-
     </button>
 
-
-    <button class="nav"
-            onclick="showPage('calendar',this)">
-
+    <button class="nav" onclick="showPage('calendar', this)">
       <span class="navIcon">▦</span>
       Calendrier
-
     </button>
 
-
-    <button class="nav"
-            onclick="showPage('properties',this)">
-
+    <button class="nav" onclick="showPage('properties', this)">
       <span class="navIcon">⌂</span>
       Logements
-
     </button>
 
-
-    <button class="nav"
-            onclick="showPage('team',this)">
-
+    <button class="nav" onclick="showPage('team', this)">
       <span class="navIcon">♙</span>
       Équipe
-
     </button>
 
-
-    <button class="nav"
-            onclick="showPage('linen',this)">
-
+    <button class="nav" onclick="showPage('linen', this)">
       <span class="navIcon">▤</span>
       Linge
-
     </button>
 
   </nav>
@@ -284,73 +226,27 @@
 </div>
 
 
-<!-- =========================
-     FENÊTRE AJOUT PRESTATION
-========================== -->
+<!-- FENÊTRE AJOUT / MODIFICATION -->
 
-<div id="modal"
-     class="modal hidden">
+<div id="modal" class="modal hidden">
 
   <div class="modalBox">
 
     <div class="modalHead">
 
-      <div class="modalTitle"
-           id="modalTitle">
+      <div id="modalTitle" class="modalTitle">
         Nouvelle prestation
       </div>
 
-      <button class="close"
-              onclick="closeModal()">
+      <button class="close" onclick="closeModal()">
         ×
       </button>
 
     </div>
 
 
-    <input type="hidden"
-           id="editId">
+    <input id="editId" type="hidden">
 
-
-    <!-- LOGEMENT -->
-
-    <div class="formGroup">
-
-      <label>Logement</label>
-
-      <input id="propertyInput"
-             placeholder="Ex : Studio Bouches du Loup">
-
-    </div>
-
-
-    <!-- DATE + HEURE -->
-
-    <div class="two">
-
-      <div class="formGroup">
-
-        <label>Date</label>
-
-        <input id="dateInput"
-               type="date">
-
-      </div>
-
-
-      <div class="formGroup">
-
-        <label>Heure</label>
-
-        <input id="timeInput"
-               type="time">
-
-      </div>
-
-    </div>
-
-
-    <!-- TYPE -->
 
     <div class="formGroup">
 
@@ -375,19 +271,64 @@
     </div>
 
 
-    <!-- INTERVENANT -->
+    <div class="formGroup">
+
+      <label>Logement</label>
+
+      <input
+        id="propertyInput"
+        placeholder="Ex : Appartement Marina">
+
+    </div>
+
+
+    <div class="formGroup">
+
+      <label>Adresse</label>
+
+      <input
+        id="addressInput"
+        placeholder="Adresse du logement">
+
+    </div>
+
+
+    <div class="two">
+
+      <div class="formGroup">
+
+        <label>Date</label>
+
+        <input
+          id="dateInput"
+          type="date">
+
+      </div>
+
+
+      <div class="formGroup">
+
+        <label>Heure</label>
+
+        <input
+          id="timeInput"
+          type="time">
+
+      </div>
+
+    </div>
+
 
     <div class="formGroup">
 
       <label>Intervenant</label>
 
-      <input id="personInput"
-             placeholder="Ex : Sophie">
+      <input
+        id="personInput"
+        placeholder="Ex : Sophie">
 
     </div>
 
-
-    <!-- STATUT -->
 
     <div class="formGroup">
 
@@ -412,31 +353,26 @@
     </div>
 
 
-    <!-- NOTES -->
-
     <div class="formGroup">
 
-      <label>Notes</label>
+      <label>Consignes</label>
 
       <textarea
         id="notesInput"
-        placeholder="Code boîte à clés, consignes, matériel, problème à vérifier...">
-      </textarea>
+        placeholder="Boîte à clés, consignes particulières, matériel..."></textarea>
 
     </div>
 
 
-    <button class="save"
-            onclick="saveTask()">
-
+    <button class="save" onclick="saveTask()">
       Enregistrer
-
     </button>
 
 
-    <button id="deleteButton"
-            class="delete hidden"
-            onclick="deleteTask()">
+    <button
+      id="deleteButton"
+      class="delete hidden"
+      onclick="deleteTask()">
 
       Supprimer la prestation
 
@@ -447,7 +383,7 @@
 </div>
 
 
-<script src="app.js"></script>
+<script src="/app.js"></script>
 
 </body>
 </html>
