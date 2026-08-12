@@ -1,69 +1,34 @@
-let currentFilter = "all";
-
-let calendarDate = new Date();
+var currentFilter = "all";
+var calendarDate = new Date();
 calendarDate.setDate(1);
 
-
-/* DATES */
-
-function isoDate(date) {
-
-  return (
-    date.getFullYear() +
-    "-" +
-    String(date.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(date.getDate()).padStart(2, "0")
-  );
+function isoDate(d) {
+  return d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
 }
 
-
 function todayISO() {
-
   return isoDate(new Date());
 }
 
-
-function addDays(number) {
-
-  const date = new Date();
-
-  date.setDate(
-    date.getDate() + number
-  );
-
-  return isoDate(date);
+function addDays(n) {
+  var d = new Date();
+  d.setDate(d.getDate() + n);
+  return isoDate(d);
 }
-
 
 function formatDate(value) {
+  if (value === todayISO()) return "Aujourd'hui";
+  if (value === addDays(1)) return "Demain";
 
-  if (value === todayISO()) {
-    return "Aujourd'hui";
-  }
-
-  if (value === addDays(1)) {
-    return "Demain";
-  }
-
-  const date =
-    new Date(value + "T12:00:00");
-
-  return date.toLocaleDateString(
-    "fr-FR",
-    {
-      weekday: "short",
-      day: "numeric",
-      month: "short"
-    }
-  );
+  return new Date(value + "T12:00:00").toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short"
+  });
 }
 
-
-/* DONNÉES */
-
-const demoTasks = [
-
+var demoTasks = [
   {
     id: 1,
     property: "Studio Bouches du Loup",
@@ -75,7 +40,6 @@ const demoTasks = [
     status: "todo",
     notes: "Vérifier le réfrigérateur."
   },
-
   {
     id: 2,
     property: "Appartement Marina",
@@ -87,7 +51,6 @@ const demoTasks = [
     status: "progress",
     notes: "Arrivée prévue à 17h."
   },
-
   {
     id: 3,
     property: "Villa Azur",
@@ -99,56 +62,22 @@ const demoTasks = [
     status: "todo",
     notes: "Vérifier la baie vitrée."
   }
-
 ];
 
-
-let tasks;
+var tasks = [];
 
 try {
-
-  tasks =
-    JSON.parse(
-      localStorage.getItem(
-        "harmony_services_v4"
-      )
-    ) || demoTasks;
-
-} catch (error) {
-
-  tasks =
-    JSON.parse(
-      JSON.stringify(demoTasks)
-    );
+  tasks = JSON.parse(localStorage.getItem("harmony_simple")) || demoTasks;
+} catch (e) {
+  tasks = demoTasks;
 }
-
 
 function saveLocal() {
-
-  localStorage.setItem(
-    "harmony_services_v4",
-    JSON.stringify(tasks)
-  );
+  localStorage.setItem("harmony_simple", JSON.stringify(tasks));
 }
 
-
-/* HELPERS */
-
-function escapeHtml(value) {
-
-  return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-
-function serviceInfo(type) {
-
+function service(type) {
   if (type === "cleaning_linen") {
-
     return {
       icon: "🧹🧺",
       name: "Ménage + linge",
@@ -156,16 +85,13 @@ function serviceInfo(type) {
     };
   }
 
-
   if (type === "maintenance") {
-
     return {
       icon: "🔧",
       name: "Maintenance",
       css: "maintenance"
     };
   }
-
 
   return {
     icon: "🧹",
@@ -174,1418 +100,475 @@ function serviceInfo(type) {
   };
 }
 
-
 function statusName(status) {
-
-  if (status === "done") {
-    return "Terminé";
-  }
-
-  if (status === "progress") {
-    return "En cours";
-  }
-
+  if (status === "done") return "Terminé";
+  if (status === "progress") return "En cours";
   return "À faire";
 }
-
 
 /* NAVIGATION */
 
 function showPage(page, button) {
-
-  const pages = [
-    "planning",
-    "calendar",
-    "properties",
-    "team",
-    "linen"
-  ];
-
+  var pages = ["planning", "calendar", "properties", "team", "linen"];
 
   pages.forEach(function(name) {
-
-    const section =
-      document.getElementById(
-        name + "Page"
-      );
-
-
-    if (section) {
-
-      section.classList.toggle(
-        "hidden",
-        name !== page
-      );
+    var el = document.getElementById(name + "Page");
+    if (el) {
+      el.classList.toggle("hidden", name !== page);
     }
   });
 
+  document.querySelectorAll(".nav").forEach(function(nav) {
+    nav.classList.remove("active");
+  });
 
-  document
-    .querySelectorAll(".nav")
-    .forEach(function(nav) {
+  if (button) button.classList.add("active");
 
-      nav.classList.remove("active");
-    });
+  var fab = document.getElementById("fab");
 
-
-  if (button) {
-    button.classList.add("active");
-  }
-
-
-  document
-    .getElementById("fab")
-    .classList.toggle(
+  if (fab) {
+    fab.classList.toggle(
       "hidden",
-      page !== "planning" &&
-      page !== "calendar"
+      page !== "planning" && page !== "calendar"
     );
-
-
-  if (page === "calendar") {
-    renderCalendar();
   }
 
-
-  if (page === "properties") {
-    renderProperties();
-  }
-
-
-  if (page === "team") {
-    renderTeam();
-  }
-
-
-  if (page === "linen") {
-    renderLinen();
-  }
+  if (page === "calendar") renderCalendar();
+  if (page === "properties") renderProperties();
+  if (page === "team") renderTeam();
+  if (page === "linen") renderLinen();
 }
 
-
-/* FILTRES */
+/* PLANNING */
 
 function setFilter(filter) {
-
   currentFilter = filter;
 
-
-  document
-    .querySelectorAll(".filter")
-    .forEach(function(button) {
-
-      button.classList.toggle(
-        "active",
-        button.dataset.filter === filter
-      );
-    });
-
+  document.querySelectorAll(".filter").forEach(function(btn) {
+    btn.classList.toggle(
+      "active",
+      btn.getAttribute("data-filter") === filter
+    );
+  });
 
   renderPlanning();
 }
 
-
-/* PLANNING */
-
 function renderPlanning() {
-
-  let list =
-    tasks.slice();
-
+  var list = tasks.slice();
 
   list.sort(function(a, b) {
-
-    return (
-      a.date + a.time
-    ).localeCompare(
-      b.date + b.time
-    );
+    return (a.date + a.time).localeCompare(b.date + b.time);
   });
 
-
   if (currentFilter === "today") {
-
-    list =
-      list.filter(function(task) {
-
-        return (
-          task.date === todayISO()
-        );
-      });
+    list = list.filter(function(t) {
+      return t.date === todayISO();
+    });
   }
-
 
   if (currentFilter === "todo") {
-
-    list =
-      list.filter(function(task) {
-
-        return (
-          task.status !== "done"
-        );
-      });
+    list = list.filter(function(t) {
+      return t.status !== "done";
+    });
   }
-
 
   if (currentFilter === "done") {
-
-    list =
-      list.filter(function(task) {
-
-        return (
-          task.status === "done"
-        );
-      });
+    list = list.filter(function(t) {
+      return t.status === "done";
+    });
   }
 
+  var html = "";
 
-  const container =
-    document.getElementById(
-      "planning"
-    );
-
-
-  if (!list.length) {
-
-    container.innerHTML =
-      '<div class="empty">' +
-      'Aucune prestation.' +
-      '</div>';
-
-    return;
-  }
-
-
-  let html = "";
-
-
-  list.forEach(function(task) {
-
-    const service =
-      serviceInfo(task.type);
-
+  list.forEach(function(t) {
+    var s = service(t.type);
 
     html +=
       '<div class="card">' +
-
         '<div class="cardTop">' +
-
           '<div>' +
-
             '<div class="time">' +
-
-              escapeHtml(
-                formatDate(task.date)
-              ) +
-
-              " · " +
-
-              escapeHtml(task.time) +
-
+              formatDate(t.date) + " · " + t.time +
             '</div>' +
-
 
             '<div class="property">' +
-
-              escapeHtml(
-                task.property
-              ) +
-
+              t.property +
             '</div>' +
-
 
             '<div class="type">' +
-
-              service.icon +
-              " " +
-              escapeHtml(
-                service.name
-              ) +
-
+              s.icon + " " + s.name +
             '</div>' +
 
-
-            (
-              task.address
-              ?
-              '<div class="address">' +
-              "📍 " +
-              escapeHtml(task.address) +
-              '</div>'
-              :
-              ""
-            ) +
-
+            '<div class="address">📍 ' +
+              (t.address || "") +
+            '</div>' +
           '</div>' +
 
-
-          '<div class="badge ' +
-          escapeHtml(task.status) +
-          '">' +
-
-            escapeHtml(
-              statusName(task.status)
-            ) +
-
+          '<div class="badge ' + t.status + '">' +
+            statusName(t.status) +
           '</div>' +
-
         '</div>' +
-
 
         '<div class="infoGrid">' +
-
           '<div class="info">' +
-
-            '<span class="label">' +
-            'Intervenant' +
-            '</span>' +
-
-            escapeHtml(
-              task.person ||
-              "Non affecté"
-            ) +
-
+            '<span class="label">Intervenant</span>' +
+            (t.person || "Non affecté") +
           '</div>' +
 
-
           '<div class="info">' +
-
-            '<span class="label">' +
-            'Type' +
-            '</span>' +
-
-            service.icon +
-            " " +
-            escapeHtml(service.name) +
-
+            '<span class="label">Type</span>' +
+            s.icon + " " + s.name +
           '</div>' +
-
         '</div>' +
 
-
-        (
-          task.notes
-          ?
-          '<div class="note">' +
-          escapeHtml(task.notes) +
-          '</div>'
-          :
-          ""
-        ) +
-
+        (t.notes
+          ? '<div class="note">' + t.notes + '</div>'
+          : "") +
 
         '<div class="cardActions">' +
+          '<button class="action" onclick="editTask(' + t.id + ')">Modifier</button>' +
 
-          '<button class="action" ' +
-          'onclick="editTask(' +
-          task.id +
-          ')">' +
-          'Modifier' +
-          '</button>' +
-
-
-          (
-            task.status !== "done"
-            ?
-            '<button class="action primary" ' +
-            'onclick="completeTask(' +
-            task.id +
-            ')">' +
-            '✓ Terminer' +
-            '</button>'
-            :
-            '<button class="action" ' +
-            'onclick="reopenTask(' +
-            task.id +
-            ')">' +
-            'Réouvrir' +
-            '</button>'
-          ) +
-
+          (t.status !== "done"
+            ? '<button class="action primary" onclick="completeTask(' + t.id + ')">Terminer</button>'
+            : '<button class="action" onclick="reopenTask(' + t.id + ')">Réouvrir</button>') +
         '</div>' +
-
       '</div>';
   });
 
-
-  container.innerHTML = html;
+  document.getElementById("planning").innerHTML =
+    html || '<div class="empty">Aucune prestation.</div>';
 }
-
 
 /* CALENDRIER */
 
 function renderCalendar() {
+  var year = calendarDate.getFullYear();
+  var month = calendarDate.getMonth();
 
-  const year =
-    calendarDate.getFullYear();
+  document.getElementById("calendarMonth").textContent =
+    calendarDate.toLocaleDateString("fr-FR", {
+      month: "long",
+      year: "numeric"
+    });
 
-  const month =
-    calendarDate.getMonth();
+  var first = new Date(year, month, 1);
+  var offset = (first.getDay() + 6) % 7;
+  var days = new Date(year, month + 1, 0).getDate();
 
+  var html = "";
 
-  document
-    .getElementById(
-      "calendarMonth"
-    )
-    .textContent =
-      calendarDate
-      .toLocaleDateString(
-        "fr-FR",
-        {
-          month: "long",
-          year: "numeric"
-        }
-      );
-
-
-  const firstDay =
-    new Date(
-      year,
-      month,
-      1
-    );
-
-
-  const offset =
-    (
-      firstDay.getDay() + 6
-    ) % 7;
-
-
-  const maxDays =
-    new Date(
-      year,
-      month + 1,
-      0
-    )
-    .getDate();
-
-
-  let html = "";
-
-
-  for (
-    let i = 0;
-    i < offset;
-    i++
-  ) {
-
-    html +=
-      '<div class="calendarDay emptyDay"></div>';
+  for (var i = 0; i < offset; i++) {
+    html += '<div class="calendarDay emptyDay"></div>';
   }
 
+  for (var day = 1; day <= days; day++) {
+    var date =
+      year + "-" +
+      String(month + 1).padStart(2, "0") + "-" +
+      String(day).padStart(2, "0");
 
-  for (
-    let day = 1;
-    day <= maxDays;
-    day++
-  ) {
-
-    const date =
-      year +
-      "-" +
-      String(
-        month + 1
-      ).padStart(2, "0") +
-      "-" +
-      String(day)
-      .padStart(2, "0");
-
-
-    const dayTasks =
-      tasks.filter(
-        function(task) {
-
-          return (
-            task.date === date
-          );
-        }
-      );
-
+    var dayTasks = tasks.filter(function(t) {
+      return t.date === date;
+    });
 
     html +=
       '<div class="calendarDay ' +
+      (date === todayISO() ? "today" : "") +
+      '" onclick="openModal(\'' + date + '\')">' +
 
-      (
-        date === todayISO()
-        ?
-        "today"
-        :
-        ""
-      ) +
+      '<div class="dayNumber">' + day + '</div>';
 
-      '" onclick="openModal(\\'' +
-      date +
-      '\\')">' +
+    dayTasks.forEach(function(t) {
+      var s = service(t.type);
 
+      html +=
+        '<div class="calendarEvent ' + s.css +
+        '" onclick="event.stopPropagation();editTask(' + t.id + ')">' +
+        s.icon + " " + t.time +
+        "<br>" +
+        t.property +
+        "</div>";
+    });
 
-      '<div class="dayNumber">' +
-      day +
-      '</div>';
-
-
-    dayTasks.forEach(
-      function(task) {
-
-        const service =
-          serviceInfo(task.type);
-
-
-        html +=
-          '<div class="calendarEvent ' +
-          service.css +
-          '" ' +
-
-          'onclick="event.stopPropagation();editTask(' +
-          task.id +
-          ')">' +
-
-          service.icon +
-          " " +
-          escapeHtml(task.time) +
-
-          '<br>' +
-
-          escapeHtml(
-            task.property
-          ) +
-
-          '</div>';
-      }
-    );
-
-
-    html += '</div>';
+    html += "</div>";
   }
 
-
-  document
-    .getElementById(
-      "calendarGrid"
-    )
-    .innerHTML =
-      html;
+  document.getElementById("calendarGrid").innerHTML = html;
 }
 
-
-function changeMonth(number) {
-
-  calendarDate.setMonth(
-    calendarDate.getMonth() +
-    number
-  );
-
+function changeMonth(n) {
+  calendarDate.setMonth(calendarDate.getMonth() + n);
   renderCalendar();
 }
-
 
 /* LOGEMENTS */
 
 function renderProperties() {
+  var data = {};
 
-  const properties = {};
-
-
-  tasks.forEach(function(task) {
-
-    if (!properties[task.property]) {
-
-      properties[task.property] = {
-        address:
-          task.address || "",
-        total: 0,
-        pending: 0
+  tasks.forEach(function(t) {
+    if (!data[t.property]) {
+      data[t.property] = {
+        address: t.address || "",
+        total: 0
       };
     }
 
-
-    properties[task.property]
-      .total++;
-
-
-    if (task.status !== "done") {
-
-      properties[task.property]
-        .pending++;
-    }
+    data[t.property].total++;
   });
 
+  var html = "";
 
-  let html = "";
-
-
-  Object.keys(properties)
-    .sort()
-    .forEach(function(name) {
-
-      const property =
-        properties[name];
-
-
-      html +=
-        '<div class="card propertyCard">' +
-
-          '<div class="houseIcon">' +
-          '⌂' +
-          '</div>' +
-
-          '<div>' +
-
-            '<div class="property">' +
-            escapeHtml(name) +
-            '</div>' +
-
-            '<div class="address">' +
-            escapeHtml(
-              property.address
-            ) +
-            '</div>' +
-
-            '<div class="type">' +
-
-            property.pending +
-            ' à faire · ' +
-            property.total +
-            ' prestation(s)' +
-
-            '</div>' +
-
-          '</div>' +
-
-        '</div>';
-    });
-
-
-  document
-    .getElementById(
-      "propertyList"
-    )
-    .innerHTML =
-      html ||
-      '<div class="empty">' +
-      'Aucun logement.' +
+  Object.keys(data).forEach(function(name) {
+    html +=
+      '<div class="card propertyCard">' +
+        '<div class="houseIcon">⌂</div>' +
+        '<div>' +
+          '<div class="property">' + name + '</div>' +
+          '<div class="address">' + data[name].address + '</div>' +
+          '<div class="type">' + data[name].total + ' prestation(s)</div>' +
+        '</div>' +
       '</div>';
-}
+  });
 
+  document.getElementById("propertyList").innerHTML =
+    html || '<div class="empty">Aucun logement.</div>';
+}
 
 /* EQUIPE */
 
 function renderTeam() {
+  var people = {};
 
-  const people = {};
-
-
-  tasks.forEach(function(task) {
-
-    const person =
-      task.person ||
-      "Non affecté";
-
+  tasks.forEach(function(t) {
+    var person = t.person || "Non affecté";
 
     if (!people[person]) {
-
-      people[person] = {
-        total: 0,
-        pending: 0
-      };
+      people[person] = 0;
     }
 
-
-    people[person].total++;
-
-
-    if (task.status !== "done") {
-
-      people[person]
-        .pending++;
-    }
+    people[person]++;
   });
 
+  var html = "";
 
-  let html = "";
+  Object.keys(people).forEach(function(person) {
+    var initials = person.substring(0, 2).toUpperCase();
 
-
-  Object.keys(people)
-    .sort()
-    .forEach(function(person) {
-
-      const initials =
-        person
-        .split(" ")
-        .map(function(word) {
-
-          return (
-            word.charAt(0)
-          );
-        })
-        .join("")
-        .substring(0,2)
-        .toUpperCase();
-
-
-      html +=
-        '<div class="card teamRow">' +
-
-          '<div class="teamAvatar">' +
-          escapeHtml(initials) +
-          '</div>' +
-
-          '<div style="flex:1">' +
-
-            '<div class="property">' +
-            escapeHtml(person) +
-            '</div>' +
-
-            '<div class="type">' +
-
-            people[person].pending +
-            ' intervention(s) à faire' +
-
-            '</div>' +
-
-          '</div>' +
-
-          '<div class="badge done">' +
-          people[person].total +
-          '</div>' +
-
-        '</div>';
-    });
-
-
-  document
-    .getElementById(
-      "teamList"
-    )
-    .innerHTML =
-      html ||
-      '<div class="empty">' +
-      'Aucun intervenant.' +
+    html +=
+      '<div class="card teamRow">' +
+        '<div class="teamAvatar">' + initials + '</div>' +
+        '<div style="flex:1">' +
+          '<div class="property">' + person + '</div>' +
+          '<div class="type">' + people[person] + ' prestation(s)</div>' +
+        '</div>' +
       '</div>';
-}
+  });
 
+  document.getElementById("teamList").innerHTML =
+    html || '<div class="empty">Aucun intervenant.</div>';
+}
 
 /* LINGE */
 
 function renderLinen() {
+  var list = tasks.filter(function(t) {
+    return t.type === "cleaning_linen";
+  });
 
-  const linenTasks =
-    tasks.filter(
-      function(task) {
+  var todo = list.filter(function(t) {
+    return t.status !== "done";
+  }).length;
 
-        return (
-          task.type ===
-          "cleaning_linen"
-        );
-      }
-    );
+  var done = list.filter(function(t) {
+    return t.status === "done";
+  }).length;
 
+  document.getElementById("linenTodo").textContent = todo;
+  document.getElementById("linenDone").textContent = done;
 
-  const pending =
-    linenTasks.filter(
-      function(task) {
+  var html = "";
 
-        return (
-          task.status !== "done"
-        );
-      }
-    );
-
-
-  const done =
-    linenTasks.filter(
-      function(task) {
-
-        return (
-          task.status === "done"
-        );
-      }
-    );
-
-
-  document
-    .getElementById(
-      "linenTodo"
-    )
-    .textContent =
-      pending.length;
-
-
-  document
-    .getElementById(
-      "linenDone"
-    )
-    .textContent =
-      done.length;
-
-
-  let html = "";
-
-
-  linenTasks.forEach(
-    function(task) {
-
-      html +=
-        '<div class="card">' +
-
-          '<div class="row">' +
-
-            '<div>' +
-
-              '<div class="property">' +
-
-              '🧹 🧺 ' +
-              escapeHtml(
-                task.property
-              ) +
-
-              '</div>' +
-
-              '<div class="type">' +
-
-              escapeHtml(
-                formatDate(
-                  task.date
-                )
-              ) +
-
-              ' · ' +
-
-              escapeHtml(
-                task.person ||
-                "Non affecté"
-              ) +
-
-              '</div>' +
-
-            '</div>' +
-
-
-            '<div class="badge ' +
-
-            (
-              task.status ===
-              "done"
-              ?
-              "done"
-              :
-              "todo"
-            ) +
-
-            '">' +
-
-            (
-              task.status ===
-              "done"
-              ?
-              "Terminé"
-              :
-              "À traiter"
-            ) +
-
-            '</div>' +
-
-          '</div>' +
-
-        '</div>';
-    }
-  );
-
-
-  document
-    .getElementById(
-      "linenList"
-    )
-    .innerHTML =
-      html ||
-      '<div class="empty">' +
-      'Aucun ménage avec linge.' +
+  list.forEach(function(t) {
+    html +=
+      '<div class="card">' +
+        '<div class="property">🧹 🧺 ' + t.property + '</div>' +
+        '<div class="type">' +
+          formatDate(t.date) + " · " +
+          (t.person || "Non affecté") +
+        '</div>' +
       '</div>';
-}
+  });
 
+  document.getElementById("linenList").innerHTML =
+    html || '<div class="empty">Aucun linge à traiter.</div>';
+}
 
 /* FORMULAIRE */
 
-function openModal(selectedDate) {
+function openModal(date) {
+  document.getElementById("modalTitle").textContent =
+    "Nouvelle prestation";
 
-  document
-    .getElementById(
-      "modalTitle"
-    )
-    .textContent =
-      "Nouvelle prestation";
+  document.getElementById("editId").value = "";
+  document.getElementById("typeInput").value = "cleaning";
+  document.getElementById("propertyInput").value = "";
+  document.getElementById("addressInput").value = "";
+  document.getElementById("dateInput").value = date || todayISO();
+  document.getElementById("timeInput").value = "10:00";
+  document.getElementById("personInput").value = "";
+  document.getElementById("statusInput").value = "todo";
+  document.getElementById("notesInput").value = "";
 
-
-  document
-    .getElementById(
-      "editId"
-    )
-    .value = "";
-
-
-  document
-    .getElementById(
-      "typeInput"
-    )
-    .value =
-      "cleaning";
-
-
-  document
-    .getElementById(
-      "propertyInput"
-    )
-    .value = "";
-
-
-  document
-    .getElementById(
-      "addressInput"
-    )
-    .value = "";
-
-
-  document
-    .getElementById(
-      "dateInput"
-    )
-    .value =
-      selectedDate ||
-      todayISO();
-
-
-  document
-    .getElementById(
-      "timeInput"
-    )
-    .value =
-      "10:00";
-
-
-  document
-    .getElementById(
-      "personInput"
-    )
-    .value = "";
-
-
-  document
-    .getElementById(
-      "statusInput"
-    )
-    .value =
-      "todo";
-
-
-  document
-    .getElementById(
-      "notesInput"
-    )
-    .value = "";
-
-
-  document
-    .getElementById(
-      "deleteButton"
-    )
-    .classList.add(
-      "hidden"
-    );
-
-
-  document
-    .getElementById(
-      "modal"
-    )
-    .classList.remove(
-      "hidden"
-    );
+  document.getElementById("deleteButton").classList.add("hidden");
+  document.getElementById("modal").classList.remove("hidden");
 }
-
 
 function closeModal() {
-
-  document
-    .getElementById(
-      "modal"
-    )
-    .classList.add(
-      "hidden"
-    );
+  document.getElementById("modal").classList.add("hidden");
 }
 
-
 function saveTask() {
-
-  const property =
-    document
-    .getElementById(
-      "propertyInput"
-    )
-    .value
-    .trim();
-
+  var property =
+    document.getElementById("propertyInput").value.trim();
 
   if (!property) {
-
-    alert(
-      "Indique le logement."
-    );
-
+    alert("Indique le logement.");
     return;
   }
 
+  var editId =
+    Number(document.getElementById("editId").value);
 
-  const date =
-    document
-    .getElementById(
-      "dateInput"
-    )
-    .value;
-
-
-  if (!date) {
-
-    alert(
-      "Indique la date."
-    );
-
-    return;
-  }
-
-
-  const editId =
-    Number(
-      document
-      .getElementById(
-        "editId"
-      )
-      .value
-    );
-
-
-  const item = {
-
-    id:
-      editId ||
-      Date.now(),
-
-    type:
-      document
-      .getElementById(
-        "typeInput"
-      )
-      .value,
-
-    property:
-      property,
-
-    address:
-      document
-      .getElementById(
-        "addressInput"
-      )
-      .value
-      .trim(),
-
-    date:
-      date,
-
-    time:
-      document
-      .getElementById(
-        "timeInput"
-      )
-      .value ||
-      "10:00",
-
-    person:
-      document
-      .getElementById(
-        "personInput"
-      )
-      .value
-      .trim(),
-
-    status:
-      document
-      .getElementById(
-        "statusInput"
-      )
-      .value,
-
-    notes:
-      document
-      .getElementById(
-        "notesInput"
-      )
-      .value
-      .trim()
+  var item = {
+    id: editId || Date.now(),
+    type: document.getElementById("typeInput").value,
+    property: property,
+    address: document.getElementById("addressInput").value.trim(),
+    date: document.getElementById("dateInput").value,
+    time: document.getElementById("timeInput").value || "10:00",
+    person: document.getElementById("personInput").value.trim(),
+    status: document.getElementById("statusInput").value,
+    notes: document.getElementById("notesInput").value.trim()
   };
 
-
   if (editId) {
-
-    const index =
-      tasks.findIndex(
-        function(task) {
-
-          return (
-            task.id === editId
-          );
-        }
-      );
-
+    var index = tasks.findIndex(function(t) {
+      return t.id === editId;
+    });
 
     if (index >= 0) {
-
       tasks[index] = item;
     }
-
   } else {
-
     tasks.push(item);
   }
 
-
   saveLocal();
-
   closeModal();
-
   renderAll();
 }
 
-
 function editTask(id) {
+  var t = tasks.find(function(item) {
+    return item.id === id;
+  });
 
-  const task =
-    tasks.find(
-      function(item) {
+  if (!t) return;
 
-        return (
-          item.id === id
-        );
-      }
-    );
+  document.getElementById("modalTitle").textContent =
+    "Modifier la prestation";
 
+  document.getElementById("editId").value = t.id;
+  document.getElementById("typeInput").value = t.type;
+  document.getElementById("propertyInput").value = t.property;
+  document.getElementById("addressInput").value = t.address || "";
+  document.getElementById("dateInput").value = t.date;
+  document.getElementById("timeInput").value = t.time;
+  document.getElementById("personInput").value = t.person || "";
+  document.getElementById("statusInput").value = t.status;
+  document.getElementById("notesInput").value = t.notes || "";
 
-  if (!task) {
-    return;
-  }
-
-
-  document
-    .getElementById(
-      "modalTitle"
-    )
-    .textContent =
-      "Modifier la prestation";
-
-
-  document
-    .getElementById(
-      "editId"
-    )
-    .value =
-      task.id;
-
-
-  document
-    .getElementById(
-      "typeInput"
-    )
-    .value =
-      task.type;
-
-
-  document
-    .getElementById(
-      "propertyInput"
-    )
-    .value =
-      task.property;
-
-
-  document
-    .getElementById(
-      "addressInput"
-    )
-    .value =
-      task.address || "";
-
-
-  document
-    .getElementById(
-      "dateInput"
-    )
-    .value =
-      task.date;
-
-
-  document
-    .getElementById(
-      "timeInput"
-    )
-    .value =
-      task.time;
-
-
-  document
-    .getElementById(
-      "personInput"
-    )
-    .value =
-      task.person || "";
-
-
-  document
-    .getElementById(
-      "statusInput"
-    )
-    .value =
-      task.status;
-
-
-  document
-    .getElementById(
-      "notesInput"
-    )
-    .value =
-      task.notes || "";
-
-
-  document
-    .getElementById(
-      "deleteButton"
-    )
-    .classList.remove(
-      "hidden"
-    );
-
-
-  document
-    .getElementById(
-      "modal"
-    )
-    .classList.remove(
-      "hidden"
-    );
+  document.getElementById("deleteButton").classList.remove("hidden");
+  document.getElementById("modal").classList.remove("hidden");
 }
-
 
 function deleteTask() {
+  var id =
+    Number(document.getElementById("editId").value);
 
-  const id =
-    Number(
-      document
-      .getElementById(
-        "editId"
-      )
-      .value
-    );
-
-
-  if (!id) {
-    return;
-  }
-
-
-  if (
-    confirm(
-      "Supprimer cette prestation ?"
-    )
-  ) {
-
-    tasks =
-      tasks.filter(
-        function(task) {
-
-          return (
-            task.id !== id
-          );
-        }
-      );
-
+  if (confirm("Supprimer cette prestation ?")) {
+    tasks = tasks.filter(function(t) {
+      return t.id !== id;
+    });
 
     saveLocal();
-
     closeModal();
-
     renderAll();
   }
 }
-
-
-/* STATUTS */
 
 function completeTask(id) {
+  var t = tasks.find(function(item) {
+    return item.id === id;
+  });
 
-  const task =
-    tasks.find(
-      function(item) {
-
-        return (
-          item.id === id
-        );
-      }
-    );
-
-
-  if (task) {
-
-    task.status =
-      "done";
-
+  if (t) {
+    t.status = "done";
     saveLocal();
-
     renderAll();
   }
 }
-
 
 function reopenTask(id) {
+  var t = tasks.find(function(item) {
+    return item.id === id;
+  });
 
-  const task =
-    tasks.find(
-      function(item) {
-
-        return (
-          item.id === id
-        );
-      }
-    );
-
-
-  if (task) {
-
-    task.status =
-      "todo";
-
+  if (t) {
+    t.status = "todo";
     saveLocal();
-
     renderAll();
   }
 }
 
-
-/* RENDER GLOBAL */
+/* TOUT RAFRAÎCHIR */
 
 function renderAll() {
+  document.getElementById("todayLabel").textContent =
+    new Date().toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
 
-  document
-    .getElementById(
-      "todayLabel"
-    )
-    .textContent =
-      new Date()
-      .toLocaleDateString(
-        "fr-FR",
-        {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric"
-        }
-      );
+  document.getElementById("statToday").textContent =
+    tasks.filter(function(t) {
+      return t.date === todayISO();
+    }).length;
 
+  document.getElementById("statTodo").textContent =
+    tasks.filter(function(t) {
+      return t.status !== "done";
+    }).length;
 
-  document
-    .getElementById(
-      "statToday"
-    )
-    .textContent =
-      tasks.filter(
-        function(task) {
+  document.getElementById("statLinen").textContent =
+    tasks.filter(function(t) {
+      return t.type === "cleaning_linen";
+    }).length;
 
-          return (
-            task.date ===
-            todayISO()
-          );
-        }
-      ).length;
-
-
-  document
-    .getElementById(
-      "statTodo"
-    )
-    .textContent =
-      tasks.filter(
-        function(task) {
-
-          return (
-            task.status !==
-            "done"
-          );
-        }
-      ).length;
-
-
-  document
-    .getElementById(
-      "statLinen"
-    )
-    .textContent =
-      tasks.filter(
-        function(task) {
-
-          return (
-            task.type ===
-            "cleaning_linen"
-          );
-        }
-      ).length;
-
-
-  document
-    .getElementById(
-      "statProperties"
-    )
-    .textContent =
-      new Set(
-        tasks.map(
-          function(task) {
-
-            return (
-              task.property
-            );
-          }
-        )
-      ).size;
-
+  document.getElementById("statProperties").textContent =
+    new Set(tasks.map(function(t) {
+      return t.property;
+    })).size;
 
   renderPlanning();
-
   renderCalendar();
-
   renderProperties();
-
   renderTeam();
-
   renderLinen();
 }
-
-
-/* FERMETURE MODALE */
-
-document
-  .getElementById(
-    "modal"
-  )
-  .addEventListener(
-    "click",
-    function(event) {
-
-      if (
-        event.target === this
-      ) {
-
-        closeModal();
-      }
-    }
-  );
-
-
-/* DÉMARRAGE */
 
 renderAll();
