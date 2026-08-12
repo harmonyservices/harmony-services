@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "harmony-services",
+  "name": "harmony-services-1",
   "compatibility_date": "2026-08-13",
   "assets": {
     "directory": "."
