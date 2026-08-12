@@ -1,99 +1,103 @@
-/* ==========================================
-   HARMONY SERVICES
-   Fonctionnement de l'application
-========================================== */
-
 let currentFilter = "all";
+
 let calendarDate = new Date();
 calendarDate.setDate(1);
 
 
-/* ==========================================
-   DATES
-========================================== */
+/* DATES */
+
+function isoDate(date) {
+
+  return (
+    date.getFullYear() +
+    "-" +
+    String(date.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(date.getDate()).padStart(2, "0")
+  );
+}
+
 
 function todayISO() {
-  const d = new Date();
 
-  return (
-    d.getFullYear() +
-    "-" +
-    String(d.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(d.getDate()).padStart(2, "0")
-  );
+  return isoDate(new Date());
 }
+
 
 function addDays(number) {
-  const d = new Date();
-  d.setDate(d.getDate() + number);
 
-  return (
-    d.getFullYear() +
-    "-" +
-    String(d.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(d.getDate()).padStart(2, "0")
+  const date = new Date();
+
+  date.setDate(
+    date.getDate() + number
   );
+
+  return isoDate(date);
 }
 
-function formatDate(dateString) {
 
-  if (dateString === todayISO()) {
+function formatDate(value) {
+
+  if (value === todayISO()) {
     return "Aujourd'hui";
   }
 
-  if (dateString === addDays(1)) {
+  if (value === addDays(1)) {
     return "Demain";
   }
 
-  const d = new Date(dateString + "T12:00:00");
+  const date =
+    new Date(value + "T12:00:00");
 
-  return d.toLocaleDateString("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short"
-  });
+  return date.toLocaleDateString(
+    "fr-FR",
+    {
+      weekday: "short",
+      day: "numeric",
+      month: "short"
+    }
+  );
 }
 
 
-/* ==========================================
-   DONNÉES DE DÉPART
-========================================== */
+/* DONNÉES */
 
-const defaultTasks = [
+const demoTasks = [
 
   {
     id: 1,
     property: "Studio Bouches du Loup",
+    address: "Villeneuve-Loubet",
     date: todayISO(),
     time: "10:00",
     type: "cleaning_linen",
     person: "Sophie",
     status: "todo",
-    notes: "Vérifier le réfrigérateur et préparer le linge."
+    notes: "Vérifier le réfrigérateur."
   },
 
   {
     id: 2,
     property: "Appartement Marina",
+    address: "Marina Baie des Anges",
     date: todayISO(),
     time: "14:00",
     type: "cleaning",
     person: "Cécile",
     status: "progress",
-    notes: "Arrivée des voyageurs prévue à 17h."
+    notes: "Arrivée prévue à 17h."
   },
 
   {
     id: 3,
     property: "Villa Azur",
+    address: "Villeneuve-Loubet",
     date: addDays(1),
     time: "11:00",
     type: "maintenance",
     person: "Marc",
     status: "todo",
-    notes: "Vérifier la poignée de la baie vitrée."
+    notes: "Vérifier la baie vitrée."
   }
 
 ];
@@ -102,30 +106,33 @@ const defaultTasks = [
 let tasks;
 
 try {
+
   tasks =
-    JSON.parse(localStorage.getItem("harmony_tasks")) ||
-    defaultTasks;
+    JSON.parse(
+      localStorage.getItem(
+        "harmony_services_v4"
+      )
+    ) || demoTasks;
+
 } catch (error) {
-  tasks = defaultTasks;
+
+  tasks =
+    JSON.parse(
+      JSON.stringify(demoTasks)
+    );
 }
 
-
-/* ==========================================
-   SAUVEGARDE
-========================================== */
 
 function saveLocal() {
 
   localStorage.setItem(
-    "harmony_tasks",
+    "harmony_services_v4",
     JSON.stringify(tasks)
   );
 }
 
 
-/* ==========================================
-   SÉCURITÉ AFFICHAGE
-========================================== */
+/* HELPERS */
 
 function escapeHtml(value) {
 
@@ -138,43 +145,37 @@ function escapeHtml(value) {
 }
 
 
-/* ==========================================
-   TYPES DE PRESTATIONS
-========================================== */
-
 function serviceInfo(type) {
 
   if (type === "cleaning_linen") {
 
     return {
-      icon: "🧹 🧺",
-      label: "Ménage + linge",
+      icon: "🧹🧺",
+      name: "Ménage + linge",
       css: "cleaning_linen"
     };
   }
+
 
   if (type === "maintenance") {
 
     return {
       icon: "🔧",
-      label: "Maintenance",
+      name: "Maintenance",
       css: "maintenance"
     };
   }
 
+
   return {
     icon: "🧹",
-    label: "Ménage",
+    name: "Ménage",
     css: "cleaning"
   };
 }
 
 
-/* ==========================================
-   STATUTS
-========================================== */
-
-function statusLabel(status) {
+function statusName(status) {
 
   if (status === "done") {
     return "Terminé";
@@ -188,9 +189,7 @@ function statusLabel(status) {
 }
 
 
-/* ==========================================
-   NAVIGATION
-========================================== */
+/* NAVIGATION */
 
 function showPage(page, button) {
 
@@ -202,13 +201,18 @@ function showPage(page, button) {
     "linen"
   ];
 
+
   pages.forEach(function(name) {
 
-    const element =
-      document.getElementById(name + "Page");
+    const section =
+      document.getElementById(
+        name + "Page"
+      );
 
-    if (element) {
-      element.classList.toggle(
+
+    if (section) {
+
+      section.classList.toggle(
         "hidden",
         name !== page
       );
@@ -219,6 +223,7 @@ function showPage(page, button) {
   document
     .querySelectorAll(".nav")
     .forEach(function(nav) {
+
       nav.classList.remove("active");
     });
 
@@ -228,15 +233,37 @@ function showPage(page, button) {
   }
 
 
+  document
+    .getElementById("fab")
+    .classList.toggle(
+      "hidden",
+      page !== "planning" &&
+      page !== "calendar"
+    );
+
+
   if (page === "calendar") {
     renderCalendar();
+  }
+
+
+  if (page === "properties") {
+    renderProperties();
+  }
+
+
+  if (page === "team") {
+    renderTeam();
+  }
+
+
+  if (page === "linen") {
+    renderLinen();
   }
 }
 
 
-/* ==========================================
-   FILTRES PLANNING
-========================================== */
+/* FILTRES */
 
 function setFilter(filter) {
 
@@ -258,62 +285,72 @@ function setFilter(filter) {
 }
 
 
-/* ==========================================
-   PLANNING
-========================================== */
+/* PLANNING */
 
 function renderPlanning() {
 
-  let list = tasks.slice();
+  let list =
+    tasks.slice();
 
 
   list.sort(function(a, b) {
 
     return (
-      a.date + " " + a.time
+      a.date + a.time
     ).localeCompare(
-      b.date + " " + b.time
+      b.date + b.time
     );
   });
 
 
   if (currentFilter === "today") {
 
-    list = list.filter(function(task) {
-      return task.date === todayISO();
-    });
+    list =
+      list.filter(function(task) {
+
+        return (
+          task.date === todayISO()
+        );
+      });
   }
 
 
   if (currentFilter === "todo") {
 
-    list = list.filter(function(task) {
-      return task.status !== "done";
-    });
+    list =
+      list.filter(function(task) {
+
+        return (
+          task.status !== "done"
+        );
+      });
   }
 
 
   if (currentFilter === "done") {
 
-    list = list.filter(function(task) {
-      return task.status === "done";
-    });
+    list =
+      list.filter(function(task) {
+
+        return (
+          task.status === "done"
+        );
+      });
   }
 
 
   const container =
-    document.getElementById("planning");
+    document.getElementById(
+      "planning"
+    );
 
 
-  if (!container) {
-    return;
-  }
-
-
-  if (list.length === 0) {
+  if (!list.length) {
 
     container.innerHTML =
-      '<div class="empty">Aucune prestation.</div>';
+      '<div class="empty">' +
+      'Aucune prestation.' +
+      '</div>';
 
     return;
   }
@@ -336,30 +373,58 @@ function renderPlanning() {
           '<div>' +
 
             '<div class="time">' +
-              escapeHtml(formatDate(task.date)) +
+
+              escapeHtml(
+                formatDate(task.date)
+              ) +
+
               " · " +
+
               escapeHtml(task.time) +
+
             '</div>' +
+
 
             '<div class="property">' +
-              escapeHtml(task.property) +
+
+              escapeHtml(
+                task.property
+              ) +
+
             '</div>' +
 
+
             '<div class="type">' +
+
               service.icon +
               " " +
-              escapeHtml(service.label) +
+              escapeHtml(
+                service.name
+              ) +
+
             '</div>' +
+
+
+            (
+              task.address
+              ?
+              '<div class="address">' +
+              "📍 " +
+              escapeHtml(task.address) +
+              '</div>'
+              :
+              ""
+            ) +
 
           '</div>' +
 
 
           '<div class="badge ' +
-            escapeHtml(task.status) +
+          escapeHtml(task.status) +
           '">' +
 
             escapeHtml(
-              statusLabel(task.status)
+              statusName(task.status)
             ) +
 
           '</div>' +
@@ -372,11 +437,12 @@ function renderPlanning() {
           '<div class="info">' +
 
             '<span class="label">' +
-              "Intervenant" +
+            'Intervenant' +
             '</span>' +
 
             escapeHtml(
-              task.person || "Non affecté"
+              task.person ||
+              "Non affecté"
             ) +
 
           '</div>' +
@@ -385,12 +451,12 @@ function renderPlanning() {
           '<div class="info">' +
 
             '<span class="label">' +
-              "Prestation" +
+            'Type' +
             '</span>' +
 
             service.icon +
             " " +
-            escapeHtml(service.label) +
+            escapeHtml(service.name) +
 
           '</div>' +
 
@@ -399,41 +465,41 @@ function renderPlanning() {
 
         (
           task.notes
-            ?
-            '<div class="note">' +
-              escapeHtml(task.notes) +
-            '</div>'
-            :
-            ""
+          ?
+          '<div class="note">' +
+          escapeHtml(task.notes) +
+          '</div>'
+          :
+          ""
         ) +
 
 
         '<div class="cardActions">' +
 
           '<button class="action" ' +
-            'onclick="editTask(' +
-            task.id +
-            ')">' +
-            "Modifier" +
+          'onclick="editTask(' +
+          task.id +
+          ')">' +
+          'Modifier' +
           '</button>' +
 
 
           (
             task.status !== "done"
-              ?
-              '<button class="action primary" ' +
-                'onclick="completeTask(' +
-                task.id +
-                ')">' +
-                "✓ Terminer" +
-              '</button>'
-              :
-              '<button class="action" ' +
-                'onclick="reopenTask(' +
-                task.id +
-                ')">' +
-                "Réouvrir" +
-              '</button>'
+            ?
+            '<button class="action primary" ' +
+            'onclick="completeTask(' +
+            task.id +
+            ')">' +
+            '✓ Terminer' +
+            '</button>'
+            :
+            '<button class="action" ' +
+            'onclick="reopenTask(' +
+            task.id +
+            ')">' +
+            'Réouvrir' +
+            '</button>'
           ) +
 
         '</div>' +
@@ -446,23 +512,9 @@ function renderPlanning() {
 }
 
 
-/* ==========================================
-   CALENDRIER
-========================================== */
+/* CALENDRIER */
 
 function renderCalendar() {
-
-  const grid =
-    document.getElementById("calendarGrid");
-
-  const monthTitle =
-    document.getElementById("calendarMonth");
-
-
-  if (!grid || !monthTitle) {
-    return;
-  }
-
 
   const year =
     calendarDate.getFullYear();
@@ -471,39 +523,51 @@ function renderCalendar() {
     calendarDate.getMonth();
 
 
-  monthTitle.textContent =
-    calendarDate.toLocaleDateString(
-      "fr-FR",
-      {
-        month: "long",
-        year: "numeric"
-      }
-    );
+  document
+    .getElementById(
+      "calendarMonth"
+    )
+    .textContent =
+      calendarDate
+      .toLocaleDateString(
+        "fr-FR",
+        {
+          month: "long",
+          year: "numeric"
+        }
+      );
 
 
   const firstDay =
-    new Date(year, month, 1);
+    new Date(
+      year,
+      month,
+      1
+    );
 
 
   const offset =
-    (firstDay.getDay() + 6) % 7;
+    (
+      firstDay.getDay() + 6
+    ) % 7;
 
 
-  const numberOfDays =
+  const maxDays =
     new Date(
       year,
       month + 1,
       0
-    ).getDate();
+    )
+    .getDate();
 
 
   let html = "";
 
 
   for (
-    let blank = 0;
-    blank < offset;
-    blank++
+    let i = 0;
+    i < offset;
+    i++
   ) {
 
     html +=
@@ -513,110 +577,111 @@ function renderCalendar() {
 
   for (
     let day = 1;
-    day <= numberOfDays;
+    day <= maxDays;
     day++
   ) {
 
-    const dateString =
+    const date =
       year +
       "-" +
-      String(month + 1).padStart(2, "0") +
+      String(
+        month + 1
+      ).padStart(2, "0") +
       "-" +
-      String(day).padStart(2, "0");
+      String(day)
+      .padStart(2, "0");
 
 
     const dayTasks =
-      tasks.filter(function(task) {
-        return task.date === dateString;
-      });
+      tasks.filter(
+        function(task) {
+
+          return (
+            task.date === date
+          );
+        }
+      );
 
 
     html +=
       '<div class="calendarDay ' +
+
       (
-        dateString === todayISO()
-          ? "today"
-          : ""
+        date === todayISO()
+        ?
+        "today"
+        :
+        ""
       ) +
+
       '" onclick="openModal(\\'' +
-      dateString +
+      date +
       '\\')">' +
 
 
       '<div class="dayNumber">' +
-        day +
+      day +
       '</div>';
 
 
-    dayTasks.forEach(function(task) {
+    dayTasks.forEach(
+      function(task) {
 
-      const service =
-        serviceInfo(task.type);
+        const service =
+          serviceInfo(task.type);
 
 
-      html +=
-        '<div class="calendarEvent ' +
-        service.css +
-        '" ' +
+        html +=
+          '<div class="calendarEvent ' +
+          service.css +
+          '" ' +
 
-        'onclick="event.stopPropagation(); editTask(' +
-        task.id +
-        ')">' +
+          'onclick="event.stopPropagation();editTask(' +
+          task.id +
+          ')">' +
 
-        service.icon +
-        " " +
-        escapeHtml(task.time) +
+          service.icon +
+          " " +
+          escapeHtml(task.time) +
 
-        '<br>' +
+          '<br>' +
 
-        escapeHtml(task.property) +
+          escapeHtml(
+            task.property
+          ) +
 
-        '</div>';
-    });
+          '</div>';
+      }
+    );
 
 
     html += '</div>';
   }
 
 
-  grid.innerHTML = html;
+  document
+    .getElementById(
+      "calendarGrid"
+    )
+    .innerHTML =
+      html;
 }
 
 
-function previousMonth() {
+function changeMonth(number) {
 
   calendarDate.setMonth(
-    calendarDate.getMonth() - 1
+    calendarDate.getMonth() +
+    number
   );
 
   renderCalendar();
 }
 
 
-function nextMonth() {
-
-  calendarDate.setMonth(
-    calendarDate.getMonth() + 1
-  );
-
-  renderCalendar();
-}
-
-
-/* ==========================================
-   LOGEMENTS
-========================================== */
+/* LOGEMENTS */
 
 function renderProperties() {
-
-  const container =
-    document.getElementById("propertyList");
-
-
-  if (!container) {
-    return;
-  }
-
 
   const properties = {};
 
@@ -626,17 +691,22 @@ function renderProperties() {
     if (!properties[task.property]) {
 
       properties[task.property] = {
+        address:
+          task.address || "",
         total: 0,
-        todo: 0
+        pending: 0
       };
     }
 
 
-    properties[task.property].total++;
+    properties[task.property]
+      .total++;
 
 
     if (task.status !== "done") {
-      properties[task.property].todo++;
+
+      properties[task.property]
+        .pending++;
     }
   });
 
@@ -646,29 +716,37 @@ function renderProperties() {
 
   Object.keys(properties)
     .sort()
-    .forEach(function(property) {
+    .forEach(function(name) {
 
-      const info =
-        properties[property];
+      const property =
+        properties[name];
 
 
       html +=
         '<div class="card propertyCard">' +
 
-          '<div class="houseIcon">⌂</div>' +
+          '<div class="houseIcon">' +
+          '⌂' +
+          '</div>' +
 
           '<div>' +
 
             '<div class="property">' +
-              escapeHtml(property) +
+            escapeHtml(name) +
+            '</div>' +
+
+            '<div class="address">' +
+            escapeHtml(
+              property.address
+            ) +
             '</div>' +
 
             '<div class="type">' +
 
-              info.todo +
-              " à faire · " +
-              info.total +
-              " prestation(s)" +
+            property.pending +
+            ' à faire · ' +
+            property.total +
+            ' prestation(s)' +
 
             '</div>' +
 
@@ -678,26 +756,21 @@ function renderProperties() {
     });
 
 
-  container.innerHTML =
-    html ||
-    '<div class="empty">Aucun logement.</div>';
+  document
+    .getElementById(
+      "propertyList"
+    )
+    .innerHTML =
+      html ||
+      '<div class="empty">' +
+      'Aucun logement.' +
+      '</div>';
 }
 
 
-/* ==========================================
-   ÉQUIPE
-========================================== */
+/* EQUIPE */
 
 function renderTeam() {
-
-  const container =
-    document.getElementById("teamList");
-
-
-  if (!container) {
-    return;
-  }
-
 
   const people = {};
 
@@ -705,14 +778,15 @@ function renderTeam() {
   tasks.forEach(function(task) {
 
     const person =
-      task.person || "Non affecté";
+      task.person ||
+      "Non affecté";
 
 
     if (!people[person]) {
 
       people[person] = {
         total: 0,
-        todo: 0
+        pending: 0
       };
     }
 
@@ -721,7 +795,9 @@ function renderTeam() {
 
 
     if (task.status !== "done") {
-      people[person].todo++;
+
+      people[person]
+        .pending++;
     }
   });
 
@@ -735,257 +811,344 @@ function renderTeam() {
 
       const initials =
         person
-          .split(" ")
-          .map(function(word) {
-            return word.charAt(0);
-          })
-          .join("")
-          .substring(0, 2)
-          .toUpperCase();
+        .split(" ")
+        .map(function(word) {
+
+          return (
+            word.charAt(0)
+          );
+        })
+        .join("")
+        .substring(0,2)
+        .toUpperCase();
 
 
       html +=
-        '<div class="card">' +
+        '<div class="card teamRow">' +
 
-          '<div class="row">' +
+          '<div class="teamAvatar">' +
+          escapeHtml(initials) +
+          '</div>' +
 
-            '<div style="display:flex;align-items:center;gap:12px">' +
+          '<div style="flex:1">' +
 
-              '<div class="teamAvatar">' +
-                escapeHtml(initials) +
-              '</div>' +
+            '<div class="property">' +
+            escapeHtml(person) +
+            '</div>' +
 
-              '<div>' +
+            '<div class="type">' +
 
-                '<div class="property">' +
-                  escapeHtml(person) +
-                '</div>' +
-
-                '<div class="type">' +
-                  people[person].todo +
-                  " prestation(s) à faire" +
-                '</div>' +
-
-              '</div>' +
+            people[person].pending +
+            ' intervention(s) à faire' +
 
             '</div>' +
 
-            '<div class="badge done">' +
-              people[person].total +
-            '</div>' +
+          '</div>' +
 
+          '<div class="badge done">' +
+          people[person].total +
           '</div>' +
 
         '</div>';
     });
 
 
-  container.innerHTML =
-    html ||
-    '<div class="empty">Aucun intervenant.</div>';
+  document
+    .getElementById(
+      "teamList"
+    )
+    .innerHTML =
+      html ||
+      '<div class="empty">' +
+      'Aucun intervenant.' +
+      '</div>';
 }
 
 
-/* ==========================================
-   LINGE
-========================================== */
+/* LINGE */
 
 function renderLinen() {
 
-  const container =
-    document.getElementById("linenList");
-
-
-  if (!container) {
-    return;
-  }
-
-
   const linenTasks =
-    tasks.filter(function(task) {
-      return task.type === "cleaning_linen";
-    });
+    tasks.filter(
+      function(task) {
+
+        return (
+          task.type ===
+          "cleaning_linen"
+        );
+      }
+    );
 
 
-  const active =
-    linenTasks.filter(function(task) {
-      return task.status !== "done";
-    });
+  const pending =
+    linenTasks.filter(
+      function(task) {
+
+        return (
+          task.status !== "done"
+        );
+      }
+    );
 
 
-  const ready =
-    linenTasks.filter(function(task) {
-      return task.status === "done";
-    });
+  const done =
+    linenTasks.filter(
+      function(task) {
+
+        return (
+          task.status === "done"
+        );
+      }
+    );
 
 
-  const dirtyElement =
-    document.getElementById("linenDirty");
-
-  const readyElement =
-    document.getElementById("linenReady");
-
-
-  if (dirtyElement) {
-    dirtyElement.textContent = active.length;
-  }
+  document
+    .getElementById(
+      "linenTodo"
+    )
+    .textContent =
+      pending.length;
 
 
-  if (readyElement) {
-    readyElement.textContent = ready.length;
-  }
+  document
+    .getElementById(
+      "linenDone"
+    )
+    .textContent =
+      done.length;
 
 
   let html = "";
 
 
-  linenTasks.forEach(function(task) {
+  linenTasks.forEach(
+    function(task) {
 
-    html +=
-      '<div class="card">' +
+      html +=
+        '<div class="card">' +
 
-        '<div class="row">' +
+          '<div class="row">' +
 
-          '<div>' +
+            '<div>' +
 
-            '<div class="property">' +
-              "🧹 🧺 " +
-              escapeHtml(task.property) +
+              '<div class="property">' +
+
+              '🧹 🧺 ' +
+              escapeHtml(
+                task.property
+              ) +
+
+              '</div>' +
+
+              '<div class="type">' +
+
+              escapeHtml(
+                formatDate(
+                  task.date
+                )
+              ) +
+
+              ' · ' +
+
+              escapeHtml(
+                task.person ||
+                "Non affecté"
+              ) +
+
+              '</div>' +
+
             '</div>' +
 
-            '<div class="type">' +
 
-              escapeHtml(
-                formatDate(task.date)
-              ) +
+            '<div class="badge ' +
 
-              " · " +
+            (
+              task.status ===
+              "done"
+              ?
+              "done"
+              :
+              "todo"
+            ) +
 
-              escapeHtml(
-                task.person || "Non affecté"
-              ) +
+            '">' +
+
+            (
+              task.status ===
+              "done"
+              ?
+              "Terminé"
+              :
+              "À traiter"
+            ) +
 
             '</div>' +
 
           '</div>' +
 
+        '</div>';
+    }
+  );
 
-          '<div class="badge ' +
-          (
-            task.status === "done"
-              ? "done"
-              : "todo"
-          ) +
-          '">' +
 
-          (
-            task.status === "done"
-              ? "Terminé"
-              : "À traiter"
-          ) +
-
-          '</div>' +
-
-        '</div>' +
-
+  document
+    .getElementById(
+      "linenList"
+    )
+    .innerHTML =
+      html ||
+      '<div class="empty">' +
+      'Aucun ménage avec linge.' +
       '</div>';
-  });
-
-
-  container.innerHTML =
-    html ||
-    '<div class="empty">Aucun linge à suivre.</div>';
 }
 
 
-/* ==========================================
-   OUVRIR FORMULAIRE
-========================================== */
+/* FORMULAIRE */
 
 function openModal(selectedDate) {
 
-  document.getElementById("modalTitle")
+  document
+    .getElementById(
+      "modalTitle"
+    )
     .textContent =
-    "Nouvelle prestation";
+      "Nouvelle prestation";
 
 
-  document.getElementById("editId")
+  document
+    .getElementById(
+      "editId"
+    )
     .value = "";
 
 
-  document.getElementById("propertyInput")
-    .value = "";
-
-
-  document.getElementById("dateInput")
+  document
+    .getElementById(
+      "typeInput"
+    )
     .value =
-    selectedDate || todayISO();
+      "cleaning";
 
 
-  document.getElementById("timeInput")
-    .value = "10:00";
-
-
-  document.getElementById("typeInput")
-    .value = "cleaning";
-
-
-  document.getElementById("personInput")
+  document
+    .getElementById(
+      "propertyInput"
+    )
     .value = "";
 
 
-  document.getElementById("statusInput")
-    .value = "todo";
-
-
-  document.getElementById("notesInput")
+  document
+    .getElementById(
+      "addressInput"
+    )
     .value = "";
 
 
-  document.getElementById("deleteButton")
-    .classList.add("hidden");
+  document
+    .getElementById(
+      "dateInput"
+    )
+    .value =
+      selectedDate ||
+      todayISO();
 
 
-  document.getElementById("modal")
-    .classList.remove("hidden");
+  document
+    .getElementById(
+      "timeInput"
+    )
+    .value =
+      "10:00";
+
+
+  document
+    .getElementById(
+      "personInput"
+    )
+    .value = "";
+
+
+  document
+    .getElementById(
+      "statusInput"
+    )
+    .value =
+      "todo";
+
+
+  document
+    .getElementById(
+      "notesInput"
+    )
+    .value = "";
+
+
+  document
+    .getElementById(
+      "deleteButton"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "modal"
+    )
+    .classList.remove(
+      "hidden"
+    );
 }
 
 
 function closeModal() {
 
-  document.getElementById("modal")
-    .classList.add("hidden");
+  document
+    .getElementById(
+      "modal"
+    )
+    .classList.add(
+      "hidden"
+    );
 }
 
-
-/* ==========================================
-   ENREGISTRER
-========================================== */
 
 function saveTask() {
 
   const property =
-    document.getElementById("propertyInput")
-      .value
-      .trim();
+    document
+    .getElementById(
+      "propertyInput"
+    )
+    .value
+    .trim();
 
 
   if (!property) {
 
-    alert("Indique le logement.");
+    alert(
+      "Indique le logement."
+    );
 
     return;
   }
 
 
   const date =
-    document.getElementById("dateInput")
-      .value;
+    document
+    .getElementById(
+      "dateInput"
+    )
+    .value;
 
 
   if (!date) {
 
-    alert("Indique la date.");
+    alert(
+      "Indique la date."
+    );
 
     return;
   }
@@ -993,62 +1156,95 @@ function saveTask() {
 
   const editId =
     Number(
-      document.getElementById("editId")
-        .value
+      document
+      .getElementById(
+        "editId"
+      )
+      .value
     );
 
 
-  const task = {
+  const item = {
 
     id:
       editId ||
       Date.now(),
 
+    type:
+      document
+      .getElementById(
+        "typeInput"
+      )
+      .value,
+
     property:
       property,
+
+    address:
+      document
+      .getElementById(
+        "addressInput"
+      )
+      .value
+      .trim(),
 
     date:
       date,
 
     time:
-      document.getElementById("timeInput")
-        .value || "10:00",
-
-    type:
-      document.getElementById("typeInput")
-        .value,
+      document
+      .getElementById(
+        "timeInput"
+      )
+      .value ||
+      "10:00",
 
     person:
-      document.getElementById("personInput")
-        .value
-        .trim(),
+      document
+      .getElementById(
+        "personInput"
+      )
+      .value
+      .trim(),
 
     status:
-      document.getElementById("statusInput")
-        .value,
+      document
+      .getElementById(
+        "statusInput"
+      )
+      .value,
 
     notes:
-      document.getElementById("notesInput")
-        .value
-        .trim()
+      document
+      .getElementById(
+        "notesInput"
+      )
+      .value
+      .trim()
   };
 
 
   if (editId) {
 
     const index =
-      tasks.findIndex(function(item) {
-        return item.id === editId;
-      });
+      tasks.findIndex(
+        function(task) {
+
+          return (
+            task.id === editId
+          );
+        }
+      );
 
 
     if (index >= 0) {
-      tasks[index] = task;
+
+      tasks[index] = item;
     }
 
   } else {
 
-    tasks.push(task);
+    tasks.push(item);
   }
 
 
@@ -1060,16 +1256,17 @@ function saveTask() {
 }
 
 
-/* ==========================================
-   MODIFIER
-========================================== */
-
 function editTask(id) {
 
   const task =
-    tasks.find(function(item) {
-      return item.id === id;
-    });
+    tasks.find(
+      function(item) {
+
+        return (
+          item.id === id
+        );
+      }
+    );
 
 
   if (!task) {
@@ -1077,70 +1274,114 @@ function editTask(id) {
   }
 
 
-  document.getElementById("modalTitle")
+  document
+    .getElementById(
+      "modalTitle"
+    )
     .textContent =
-    "Modifier la prestation";
+      "Modifier la prestation";
 
 
-  document.getElementById("editId")
+  document
+    .getElementById(
+      "editId"
+    )
     .value =
-    task.id;
+      task.id;
 
 
-  document.getElementById("propertyInput")
+  document
+    .getElementById(
+      "typeInput"
+    )
     .value =
-    task.property;
+      task.type;
 
 
-  document.getElementById("dateInput")
+  document
+    .getElementById(
+      "propertyInput"
+    )
     .value =
-    task.date;
+      task.property;
 
 
-  document.getElementById("timeInput")
+  document
+    .getElementById(
+      "addressInput"
+    )
     .value =
-    task.time;
+      task.address || "";
 
 
-  document.getElementById("typeInput")
+  document
+    .getElementById(
+      "dateInput"
+    )
     .value =
-    task.type;
+      task.date;
 
 
-  document.getElementById("personInput")
+  document
+    .getElementById(
+      "timeInput"
+    )
     .value =
-    task.person || "";
+      task.time;
 
 
-  document.getElementById("statusInput")
+  document
+    .getElementById(
+      "personInput"
+    )
     .value =
-    task.status;
+      task.person || "";
 
 
-  document.getElementById("notesInput")
+  document
+    .getElementById(
+      "statusInput"
+    )
     .value =
-    task.notes || "";
+      task.status;
 
 
-  document.getElementById("deleteButton")
-    .classList.remove("hidden");
+  document
+    .getElementById(
+      "notesInput"
+    )
+    .value =
+      task.notes || "";
 
 
-  document.getElementById("modal")
-    .classList.remove("hidden");
+  document
+    .getElementById(
+      "deleteButton"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "modal"
+    )
+    .classList.remove(
+      "hidden"
+    );
 }
 
-
-/* ==========================================
-   SUPPRIMER
-========================================== */
 
 function deleteTask() {
 
   const id =
     Number(
-      document.getElementById("editId")
-        .value
+      document
+      .getElementById(
+        "editId"
+      )
+      .value
     );
 
 
@@ -1156,9 +1397,14 @@ function deleteTask() {
   ) {
 
     tasks =
-      tasks.filter(function(task) {
-        return task.id !== id;
-      });
+      tasks.filter(
+        function(task) {
+
+          return (
+            task.id !== id
+          );
+        }
+      );
 
 
     saveLocal();
@@ -1170,21 +1416,25 @@ function deleteTask() {
 }
 
 
-/* ==========================================
-   TERMINER / RÉOUVRIR
-========================================== */
+/* STATUTS */
 
 function completeTask(id) {
 
   const task =
-    tasks.find(function(item) {
-      return item.id === id;
-    });
+    tasks.find(
+      function(item) {
+
+        return (
+          item.id === id
+        );
+      }
+    );
 
 
   if (task) {
 
-    task.status = "done";
+    task.status =
+      "done";
 
     saveLocal();
 
@@ -1196,14 +1446,20 @@ function completeTask(id) {
 function reopenTask(id) {
 
   const task =
-    tasks.find(function(item) {
-      return item.id === id;
-    });
+    tasks.find(
+      function(item) {
+
+        return (
+          item.id === id
+        );
+      }
+    );
 
 
   if (task) {
 
-    task.status = "todo";
+    task.status =
+      "todo";
 
     saveLocal();
 
@@ -1212,20 +1468,17 @@ function reopenTask(id) {
 }
 
 
-/* ==========================================
-   AFFICHAGE GÉNÉRAL
-========================================== */
+/* RENDER GLOBAL */
 
 function renderAll() {
 
-  const todayLabel =
-    document.getElementById("todayLabel");
-
-
-  if (todayLabel) {
-
-    todayLabel.textContent =
-      new Date().toLocaleDateString(
+  document
+    .getElementById(
+      "todayLabel"
+    )
+    .textContent =
+      new Date()
+      .toLocaleDateString(
         "fr-FR",
         {
           weekday: "long",
@@ -1234,49 +1487,71 @@ function renderAll() {
           year: "numeric"
         }
       );
-  }
 
 
-  const statToday =
-    document.getElementById("statToday");
+  document
+    .getElementById(
+      "statToday"
+    )
+    .textContent =
+      tasks.filter(
+        function(task) {
+
+          return (
+            task.date ===
+            todayISO()
+          );
+        }
+      ).length;
 
 
-  const statTodo =
-    document.getElementById("statTodo");
+  document
+    .getElementById(
+      "statTodo"
+    )
+    .textContent =
+      tasks.filter(
+        function(task) {
+
+          return (
+            task.status !==
+            "done"
+          );
+        }
+      ).length;
 
 
-  const statLinen =
-    document.getElementById("statLinen");
+  document
+    .getElementById(
+      "statLinen"
+    )
+    .textContent =
+      tasks.filter(
+        function(task) {
+
+          return (
+            task.type ===
+            "cleaning_linen"
+          );
+        }
+      ).length;
 
 
-  if (statToday) {
+  document
+    .getElementById(
+      "statProperties"
+    )
+    .textContent =
+      new Set(
+        tasks.map(
+          function(task) {
 
-    statToday.textContent =
-      tasks.filter(function(task) {
-        return task.date === todayISO();
-      }).length;
-  }
-
-
-  if (statTodo) {
-
-    statTodo.textContent =
-      tasks.filter(function(task) {
-        return task.status !== "done";
-      }).length;
-  }
-
-
-  if (statLinen) {
-
-    statLinen.textContent =
-      tasks.filter(function(task) {
-        return (
-          task.type === "cleaning_linen" &&
-          task.status !== "done"
-        );
-      }).length;
-  }
+            return (
+              task.property
+            );
+          }
+        )
+      ).size;
 
 
   renderPlanning();
@@ -1291,30 +1566,26 @@ function renderAll() {
 }
 
 
-/* ==========================================
-   FERMER LA FENÊTRE EN CLIQUANT AUTOUR
-========================================== */
+/* FERMETURE MODALE */
 
-const modal =
-  document.getElementById("modal");
-
-
-if (modal) {
-
-  modal.addEventListener(
+document
+  .getElementById(
+    "modal"
+  )
+  .addEventListener(
     "click",
     function(event) {
 
-      if (event.target === modal) {
+      if (
+        event.target === this
+      ) {
+
         closeModal();
       }
     }
   );
-}
 
 
-/* ==========================================
-   DÉMARRAGE
-========================================== */
+/* DÉMARRAGE */
 
 renderAll();
